@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 class PathFinderTest {
 
     @Test
-    void test() {
+    void test() throws PathNotFoundException {
         //given
         Node a = new Node(1);
         Node b = new Node(2);
@@ -75,7 +75,6 @@ class PathFinderTest {
 
         //when
         PathFinder aStarPathFinder = new AStarPathFinder(graph, new EuclideanHeuristicFunction(coordinates));
-        PathFinder dijkstraPathFinder = new DijkstraPathFinder(graph);
 
         //then
         List<Node> expectedDtoH = Arrays.asList(d, c, g, h);
@@ -89,11 +88,5 @@ class PathFinderTest {
         assertIterableEquals(expectedEtoH, aStarPathFinder.findPath(e, h));
         assertIterableEquals(expectedBtoH, aStarPathFinder.findPath(b, h));
         assertIterableEquals(expectedBtoI, aStarPathFinder.findPath(b, i));
-
-        assertIterableEquals(expectedDtoH, dijkstraPathFinder.findPath(d, h));
-        assertIterableEquals(expectedAtoF, dijkstraPathFinder.findPath(a, f));
-        assertIterableEquals(expectedEtoH, dijkstraPathFinder.findPath(e, h));
-        assertIterableEquals(expectedBtoH, dijkstraPathFinder.findPath(b, h));
-        assertIterableEquals(expectedBtoI, dijkstraPathFinder.findPath(b, i));
     }
 }

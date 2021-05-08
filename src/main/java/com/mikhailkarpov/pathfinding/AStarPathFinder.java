@@ -4,28 +4,29 @@ import com.google.common.graph.ValueGraph;
 
 import java.util.*;
 
-public class AStarPathFinder implements PathFinder<Node> {
+public class AStarPathFinder<N> implements PathFinder<N> {
 
-    private final ValueGraph<Node, Double> graph;
+    private final ValueGraph<N, Double> graph;
     private final HeuristicFunction heuristicFunction;
 
-    public AStarPathFinder(ValueGraph<Node, Double> graph, HeuristicFunction heuristicFunction) {
+    public AStarPathFinder(ValueGraph<N, Double> graph, HeuristicFunction heuristicFunction) {
         this.graph = graph;
         this.heuristicFunction = heuristicFunction;
     }
 
-    public List<Node> findPath(Node source, Node target) {
+    @Override
+    public List<N> findPath(N source, N target) throws PathNotFoundException {
 
-        PriorityQueue<PathSegment> openSet = new PriorityQueue<>();
-        Set<Node> closedSet = new HashSet<>();
-        Map<Node, Double> distances = new HashMap<>(); //shortest estimate so far
+        PriorityQueue<PathSegment<N>> openSet = new PriorityQueue<>();
+        Set<N> closedSet = new HashSet<>();
+        Map<N, Double> distances = new HashMap<>(); //shortest estimate so far
 
         //Start from the source node
-        openSet.add(new PathSegment(source, 0.0));
+        openSet.add(new PathSegment<>(source, 0.0));
         distances.put(source, 0.0);
 
         while (!openSet.isEmpty()) {
-            PathSegment currentSegment = openSet.remove();
+            PathSegment<N> currentSegment = openSet.remove();
 
             //If we have reached the target, trace back path
             if (target.equals(currentSegment.node)) {
@@ -37,7 +38,7 @@ public class AStarPathFinder implements PathFinder<Node> {
             }
             closedSet.add(currentSegment.node);
 
-            for (Node neighbor : graph.adjacentNodes(currentSegment.node)) {
+            for (N neighbor : graph.adjacentNodes(currentSegment.node)) {
                 if (closedSet.contains(neighbor)) {
                     continue;
                 }
@@ -45,7 +46,7 @@ public class AStarPathFinder implements PathFinder<Node> {
                 double cost = distances.get(currentSegment.node);
                 cost += graph.edgeValue(currentSegment.node, neighbor).orElseThrow(() -> {
                     String message = String.format("Connection % - %s not found", currentSegment.node, neighbor);
-                    return new IllegalStateException(message);
+                    return new PathNotFoundException(message);
                 });
 
                 if (!distances.containsKey(neighbor) || distances.get(neighbor) > cost) {
@@ -59,12 +60,13 @@ public class AStarPathFinder implements PathFinder<Node> {
             }
         }
         // All nodes have been visited, but target was not found
-        return Collections.emptyList();
+        String message = String.format("Path from %s to %s not found", source, target);
+        throw new PathNotFoundException(message);
     }
 
-    private List<Node> tracebackPath(PathSegment currentSegment) {
-        List<Node> path = new ArrayList<>();
-        PathSegment nextSegment = currentSegment;
+    private List<N> tracebackPath(PathSegment<N> currentSegment) {
+        List<N> path = new ArrayList<>();
+        PathSegment<N> nextSegment = currentSegment;
 
         while (nextSegment != null) {
             path.add(nextSegment.node);
@@ -75,17 +77,17 @@ public class AStarPathFinder implements PathFinder<Node> {
         return path;
     }
 
-    private static class PathSegment implements Comparable<PathSegment> {
+    private static class PathSegment<N> implements Comparable<PathSegment<N>> {
 
-        private final Node node;
-        private PathSegment previous;
+        private final N node;
+        private final PathSegment<N> previous;
         private final double distance;
 
-        public PathSegment(Node node, double distance) {
+        public PathSegment(N node, double distance) {
             this(node, null, distance);
         }
 
-        public PathSegment(Node node, PathSegment previous, double distance) {
+        public PathSegment(N node, PathSegment previous, double distance) {
             this.node = node;
             this.previous = previous;
             this.distance = distance;

@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface PathFinder<N> {
 
-    List<N> findPath(N source, N target);
+    List<N> findPath(N source, N target) throws PathNotFoundException;
 }

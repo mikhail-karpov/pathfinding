@@ -2,29 +2,13 @@ package com.mikhailkarpov.pathfinding;
 
 import lombok.Data;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Data
 public class Node {
 
     private final int id;
-    private Set<Node> connections = new HashSet<>();
-    private double x;
-    private double y;
 
     public Node(int id) {
         this.id = id;
-    }
-
-    public Node(int id, double x, double y) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-    }
-
-    public void addConnection(Node node) {
-        this.connections.add(node);
     }
 
     @Override
